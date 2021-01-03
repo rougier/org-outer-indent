@@ -1,0 +1,58 @@
+
+
+#+TITLE:An outer indentation org mode
+#+AUTHOR:Nicolas P. Rougier — Inria Bordeaux Sud-Ouest
+
+*Abstract |* This library provides an outer indent mode for org
+           headlines that is compatible with org-num-mode.
+           
+* Introduction
+
+This library provides an outer indent mode for org headlines that
+is compatible with org-num-mode. Use =<M-x org-outer-indent-mode>=
+to activate it.
+
+** How does it work?
+
+Internally, the library advises the =org-indent--compute-prefixes=
+function to compute line prefix depending on the desired mode and
+add a hook on org-num-mode to hide/show stars.
+
+** Limitations
+
+- =org-num-mode= can selectively un-number a given headline. In such
+  case indentaton will be wrong and stars will be hidden, which might
+  be confusing. It might be possible to solve the problem by examining
+  org-num-mode overlays but this might be too much work.
+ 
+- When used in conjunction woth org-num-mode, outer indentation works
+  if the number of sections at a given level is < 10 and uses a
+  regular numbering format (such as the default one).
+
+* Code for this document
+
+#+begin_src lisp
+(defun org-num-format (numbering)
+  (cond ((= (length numbering) 1)
+         (concat (propertize (format " %d " (nth 0 numbering))
+                             'face 'nano-face-header-faded) " "))
+        (t
+         (propertize
+          (concat (mapconcat #'number-to-string numbering ".") " ")
+          'face 'nano-face-faded))))
+(setq org-num-format-function #'org-num-format)
+
+(face-remap-add-relative 'org-document-info
+                         :inherit 'nano-face-faded)
+(face-remap-add-relative 'org-document-title
+                         :foreground nano-color-foreground
+                         :family "Roboto Slab" 
+                         :height 250
+                         :weight 'medium)
+(font-lock-add-keywords 'org-mode '(("\\(^*+\\) " 0 'nano-face-faded)))
+
+(setq org-num-face 'nano-face-faded)
+(setq org-hidden-keywords '(title author date startup))
+(setq fill-column 70)
+(setq-default line-spacing 1)
+#+end_src
