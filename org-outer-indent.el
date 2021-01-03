@@ -94,10 +94,12 @@
         (make-vector org-indent--deepest-level nil))
 
   ;; Find the lowest headline level
-  (let* ((max-level (seq-max (org-element-map
-                              (org-element-parse-buffer) 'headline
-                              #'(lambda (item)
-                                  (org-element-property :level item)))))
+  (let* ((headline-levels (or (org-element-map
+                                  (org-element-parse-buffer) 'headline
+                                #'(lambda (item)
+                                    (org-element-property :level item)))
+                              '()))
+         (max-level (seq-max headline-levels))
          ;; We could also iterate over each evel to get maximum length
          ;; Instead, we take the length of the deepest numbered level.
          (line-indentation (org-outer-indent--prefix-length
